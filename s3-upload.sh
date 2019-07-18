@@ -1,16 +1,23 @@
 #Backup Script Start
-dbname=$5
-dbuser=$6
-dbpassword=$7
+dbnamelist=$5
+dbuserlist=$6
+dbpwdlist=$7
 filename=$8
+
+IFS=',' read -ra dbnamearray <<< "$dbnamelist"
+IFS=',' read -ra dbuserarray <<< "$dbuserlist"
+IFS=',' read -ra dbpwdarray <<< "$dbpwdlist"
+
 
 echo 'Removing Old Files from Backup Folder..'
 rm -rf backups/*
 echo 'All Files removed from Backup Folder..'
 
-echo 'Creating Database Backup Now...'
-mysqldump -u$dbuser -p$dbpassword $dbname > backups/$dbname.sql 
-echo 'Database Backup Created Successfully...'
+echo 'Creating Database(s) Backup Now...'
+for ((i=0;i<${#dbnamearray[@]};i++)); do
+mysqldump -u${dbuserarray[$i]} -p${dbpwdarray[$i]} ${dbnamearray[$i]} > backups/${dbnamearray[$i]}.sql
+done
+echo 'Database(s) Backup Created Successfully...'
 
 echo 'Archiving Files & Folders from /public_html to /backups'
 zip -r backups/$filename.zip public_html/
